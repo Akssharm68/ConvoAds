@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ConvoAds — Contextual Ad Engine for AI Chat</title>
+<style>
+:root{--bg:#131314;--bg-s:#1e1f20;--bg-h:#2a2b2d;--text:#e3e3e3;--text-2:#adadad;--text-3:#7a7a7a;--border:#3c3c3c;--border-s:#2a2b2d;--blue:#89b4fa;--blue-d:rgba(137,180,250,0.12);--g1:#4285f4;--g2:#a855f7;--g3:#ec4899;--amber:#f59e0b;--amber-d:rgba(245,158,11,0.1);--amber-b:rgba(245,158,11,0.25);--green:#34d399;--green-d:rgba(52,211,153,0.1);--r:12px;--shadow:0 2px 8px rgba(0,0,0,0.3);}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#fff;--bg-s:#f0f4f9;--bg-h:#e8ecf1;--text:#1f1f1f;--text-2:#5f6368;--text-3:#9aa0a6;--border:#dfe1e5;--border-s:#e8eaed;--blue:#1a73e8;--blue-d:rgba(26,115,232,0.08);--amber:#b45309;--amber-d:rgba(180,83,9,0.06);--amber-b:rgba(180,83,9,0.18);--green:#0d9488;--green-d:rgba(13,148,136,0.06);--shadow:0 2px 8px rgba(0,0,0,0.08);}}
+:root[data-theme="light"]{--bg:#fff;--bg-s:#f0f4f9;--bg-h:#e8ecf1;--text:#1f1f1f;--text-2:#5f6368;--text-3:#9aa0a6;--border:#dfe1e5;--border-s:#e8eaed;--blue:#1a73e8;--blue-d:rgba(26,115,232,0.08);--amber:#b45309;--amber-d:rgba(180,83,9,0.06);--amber-b:rgba(180,83,9,0.18);--green:#0d9488;--green-d:rgba(13,148,136,0.06);--shadow:0 2px 8px rgba(0,0,0,0.08);}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%;}
+body{font-family:'Google Sans',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;height:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+.app{max-width:820px;margin:0 auto;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;}
+.topbar{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.topbar-l{display:flex;align-items:center;gap:8px;}
+.gi{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--g1),var(--g2),var(--g3));display:flex;align-items:center;justify-content:center;}
+.gi::after{content:'✦';color:#fff;font-size:14px;}
+.topbar-t{font-size:18px;font-weight:500;letter-spacing:-0.2px;}
+.topbar-r{display:flex;align-items:center;gap:8px;}
+.pb{padding:6px 14px;border-radius:20px;font-size:12px;background:var(--bg-s);border:1px solid var(--border-s);color:var(--text-2);cursor:pointer;transition:all 0.15s;}
+.pb:hover{background:var(--bg-h);color:var(--text);}.pb.on{background:var(--blue-d);color:var(--blue);border-color:var(--blue);}
+
+.landing{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;}
+.ls{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--g1),var(--g2),var(--g3));display:flex;align-items:center;justify-content:center;margin-bottom:24px;animation:pulse 3s ease-in-out infinite;}
+.ls::after{content:'✦';color:#fff;font-size:24px;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+.landing h1{font-size:32px;font-weight:400;letter-spacing:-0.5px;margin-bottom:6px;background:linear-gradient(135deg,var(--g1),var(--g2),var(--g3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.landing .sub{color:var(--text-3);font-size:15px;margin-bottom:12px;max-width:460px;}
+.landing .sub2{color:var(--text-3);font-size:12px;margin-bottom:28px;max-width:400px;font-style:italic;}
+
+/* User-view chips (default) */
+.user-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:600px;}
+.chip{padding:10px 18px;background:var(--bg-s);border:1px solid var(--border-s);border-radius:20px;font-size:13px;color:var(--text-2);cursor:pointer;transition:all 0.15s;}
+.chip:hover{background:var(--bg-h);color:var(--text);border-color:var(--border);}
+
+/* PM-view funnel (hidden by default, shown when .pm-on on .app) */
+.funnel-section{display:none;max-width:620px;width:100%;margin-bottom:20px;text-align:left;}
+.app.pm-on .funnel-section{display:block;}
+.app.pm-on .user-chips{display:none;}
+.funnel-title{font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:10px;text-align:center;}
+.funnel-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.funnel-stage{width:80px;flex-shrink:0;font-size:11px;font-weight:600;padding:5px 0;text-align:center;border-radius:6px;}
+.funnel-stage.aw{background:rgba(66,133,244,0.15);color:#4285f4;}
+.funnel-stage.in{background:rgba(168,85,247,0.15);color:#a855f7;}
+.funnel-stage.de{background:rgba(245,158,11,0.15);color:#f59e0b;}
+.funnel-stage.ac{background:rgba(52,211,153,0.15);color:#34d399;}
+.funnel-q{flex:1;font-size:13px;color:var(--text-2);padding:10px 16px;background:var(--bg-s);border:1px solid var(--border-s);border-radius:20px;cursor:pointer;transition:all 0.15s;}
+.funnel-q:hover{background:var(--bg-h);color:var(--text);border-color:var(--border);}
+.funnel-ad-type{width:90px;flex-shrink:0;font-size:10px;color:var(--text-3);text-align:right;}
+
+.chat{flex:1;overflow-y:auto;padding:20px 20px 8px;display:none;}
+.msg{margin-bottom:24px;animation:fu 0.3s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.msg-u{display:flex;justify-content:flex-end;}
+.msg-uc{background:var(--bg-s);padding:12px 20px;border-radius:20px 20px 4px 20px;max-width:70%;font-size:15px;}
+.msg-a{display:flex;gap:12px;align-items:flex-start;}
+.av{width:28px;height:28px;border-radius:50%;flex-shrink:0;margin-top:2px;background:linear-gradient(135deg,var(--g1),var(--g2),var(--g3));display:flex;align-items:center;justify-content:center;}
+.av::after{content:'✦';color:#fff;font-size:12px;}
+.ab{flex:1;min-width:0;}
+.at{font-size:15px;line-height:1.75;}.at p{margin-bottom:12px;}.at p:last-child{margin-bottom:0;}.at strong{font-weight:600;}
+.aa{display:flex;gap:8px;margin-top:10px;}
+.aa button{width:30px;height:30px;border-radius:50%;background:none;border:none;color:var(--text-3);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.aa button:hover{background:var(--bg-s);color:var(--text);}
+
+.sp{margin-top:14px;padding-top:14px;border-top:1px solid var(--border-s);}
+.sp-l{font-size:11px;color:var(--text-3);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.sp-b{padding:2px 7px;background:var(--amber-d);color:var(--amber);border-radius:4px;font-weight:600;font-size:10px;letter-spacing:0.3px;}
+
+.pm-debug{display:none;margin-bottom:8px;padding:8px 12px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;font-size:11px;color:#a855f7;}
+.pm-debug .label{font-weight:600;margin-right:4px;}
+.app.pm-on .pm-debug{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pm-stage{padding:2px 7px;border-radius:4px;font-weight:600;font-size:10px;}
+.pm-stage.aw{background:rgba(66,133,244,0.15);color:#4285f4;}
+.pm-stage.in{background:rgba(168,85,247,0.15);color:#a855f7;}
+.pm-stage.de{background:rgba(245,158,11,0.15);color:#f59e0b;}
+.pm-stage.ac{background:rgba(52,211,153,0.15);color:#34d399;}
+
+.ta{margin-bottom:8px;padding:12px 16px;border-radius:var(--r);background:var(--bg-s);border:1px solid var(--border-s);cursor:pointer;transition:all 0.15s;}
+.ta:hover{background:var(--bg-h);border-color:var(--border);}
+.ta-top{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.ta-badge{font-size:10px;font-weight:700;color:var(--amber);background:var(--amber-d);border:1px solid var(--amber-b);padding:1px 5px;border-radius:3px;}
+.ta-url{font-size:12px;color:var(--green);}
+.ta-title{font-size:14px;font-weight:500;color:var(--blue);margin-bottom:3px;}
+.ta-desc{font-size:12px;color:var(--text-2);line-height:1.5;}
+
+.da-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:8px;}
+.da{border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all 0.15s;border:1px solid var(--border-s);}
+.da:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.da-img{height:100px;display:flex;align-items:center;justify-content:center;position:relative;}
+.da-icon{font-size:36px;position:relative;z-index:1;}
+.da-brand{position:absolute;top:8px;left:10px;font-size:10px;font-weight:600;color:rgba(255,255,255,0.85);background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:10px;}
+.da-badge{position:absolute;top:8px;right:10px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.8);background:rgba(0,0,0,0.25);padding:2px 6px;border-radius:3px;}
+.da-body{padding:12px 14px;background:var(--bg-s);}
+.da-name{font-size:13px;font-weight:600;margin-bottom:3px;}
+.da-desc{font-size:11px;color:var(--text-2);margin-bottom:8px;line-height:1.4;}
+.da-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;}
+.da-price{font-size:14px;font-weight:700;color:var(--green);}
+.da-rating{font-size:11px;color:var(--amber);}
+.da-cta{font-size:11px;color:var(--blue);font-weight:500;}
+
+.guardrail{margin-bottom:24px;animation:fu 0.3s ease;}
+.guardrail-inner{display:flex;gap:12px;align-items:flex-start;}
+.guardrail-body{flex:1;background:var(--bg-s);border:1px solid var(--border-s);border-radius:4px 16px 16px 16px;padding:16px 20px;}
+.guardrail-title{font-size:14px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.guardrail-title .lock{font-size:16px;}
+.guardrail-text{font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:12px;}
+.guardrail-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.guardrail-chip{padding:6px 14px;background:var(--bg-h);border:1px solid var(--border);border-radius:16px;font-size:12px;color:var(--text-2);cursor:pointer;transition:all 0.15s;}
+.guardrail-chip:hover{color:var(--text);border-color:var(--blue);background:var(--blue-d);}
+
+.mx{display:none;gap:16px;padding:8px 20px;flex-shrink:0;justify-content:center;flex-wrap:wrap;}
+.app.pm-on .mx{display:flex;}
+.mc{font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:3px;}
+.mv{font-weight:600;color:var(--green);}
+
+.ib{padding:8px 16px 16px;flex-shrink:0;}
+.ip{display:flex;align-items:flex-end;background:var(--bg-s);border:1px solid var(--border-s);border-radius:28px;padding:6px 6px 6px 20px;transition:border-color 0.15s;}
+.ip:focus-within{border-color:var(--blue);}
+.ip textarea{flex:1;border:none;background:none;color:var(--text);font-size:15px;font-family:inherit;outline:none;resize:none;max-height:120px;line-height:1.5;padding:8px 0;}
+.ip textarea::placeholder{color:var(--text-3);}
+.sb{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:opacity 0.15s;}
+.sb:hover{opacity:0.85;}.sb:disabled{opacity:0.3;cursor:not-allowed;}
+.ft{padding:8px 20px 12px;text-align:center;font-size:11px;color:var(--text-3);flex-shrink:0;}
+
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center;padding:20px;}
+.mbg.open{display:flex;}
+.mdl{background:var(--bg-s);border-radius:16px;max-width:640px;width:100%;max-height:85vh;overflow-y:auto;padding:28px;box-shadow:var(--shadow);}
+.mdl h2{font-size:17px;font-weight:600;margin-bottom:4px;}
+.mdl>p{font-size:13px;color:var(--text-2);margin-bottom:20px;}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.mcol{border:1px solid var(--border-s);border-radius:var(--r);padding:14px;}
+.mcol h3{font-size:13px;font-weight:600;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border-s);}
+.mcol h3.g{color:var(--green);}
+.mr{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;}
+.mr span:first-child{color:var(--text-2);}.mr span:last-child{font-weight:500;}
+.aida{margin-bottom:16px;}
+.aida-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.aida-label{width:80px;flex-shrink:0;font-size:11px;font-weight:600;padding:4px 0;text-align:center;border-radius:6px;}
+.aida-label.aw{background:rgba(66,133,244,0.15);color:#4285f4;}
+.aida-label.in{background:rgba(168,85,247,0.15);color:#a855f7;}
+.aida-label.de{background:rgba(245,158,11,0.15);color:#f59e0b;}
+.aida-label.ac{background:rgba(52,211,153,0.15);color:#34d399;}
+.aida-bar{flex:1;height:24px;border-radius:6px;display:flex;align-items:center;padding:0 10px;}
+.aida-bar span{font-size:10px;font-weight:500;color:rgba(255,255,255,0.9);}
+.aida-fmt{width:90px;flex-shrink:0;font-size:10px;color:var(--text-3);text-align:right;}
+.insight{padding:12px;background:var(--blue-d);border-radius:var(--r);font-size:12px;color:var(--text-2);line-height:1.6;margin-top:12px;}
+.insight strong{color:var(--text);}
+.mclose{margin-top:16px;padding:10px;width:100%;background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;border:none;border-radius:10px;font-size:14px;cursor:pointer;}
+
+@media(max-width:600px){.landing h1{font-size:24px;}.da-grid{grid-template-columns:1fr;}.mg{grid-template-columns:1fr;}.msg-uc{max-width:85%;}.funnel-ad-type{display:none;}.funnel-stage{width:65px;font-size:10px;}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="topbar-l"><div class="gi"></div><span class="topbar-t">ConvoAds</span></div>
+    <div class="topbar-r">
+      <button class="pb on" id="atb" onclick="tAds()">Ads On</button>
+      <button class="pb" id="pmb" onclick="tPM()">PM View</button>
+      <button class="pb" onclick="oM()">Dashboard</button>
+    </div>
+  </div>
+
+  <div class="landing" id="land">
+    <div class="ls"></div>
+    <h1>What's on your mind?</h1>
+    <p class="sub">AI-powered chat with contextually relevant sponsored content — matching the right ad format to user intent so ads feel helpful, not intrusive.</p>
+    <p class="sub2">Try a query below or type your own to see how ads adapt.</p>
+
+    <!-- User view (default): just clickable queries, no funnel labels -->
+    <div class="user-chips">
+      <div class="chip" onclick="show('awareness')">What should I look for in running shoes?</div>
+      <div class="chip" onclick="show('interest')">Nike vs Brooks vs ASICS for flat feet</div>
+      <div class="chip" onclick="show('desire')">Best running shoes for flat feet under $150</div>
+      <div class="chip" onclick="show('action')">Buy Nike Pegasus 41 best price free shipping</div>
+      <div class="chip" onclick="show('travel')">Plan a weekend trip to Austin</div>
+      <div class="chip" onclick="show('invest')">How to start investing in my 20s</div>
+      <div class="chip" onclick="show('laptop')">Best laptop for programming under $1200</div>
+    </div>
+
+    <!-- PM view: shows funnel labels and ad type routing -->
+    <div class="funnel-section">
+      <div class="funnel-title">Same topic, different intent → different ad format</div>
+      <div class="funnel-row"><div class="funnel-stage aw">Awareness</div><div class="funnel-q" onclick="show('awareness')">What should I look for in running shoes?</div><div class="funnel-ad-type">→ Text ads</div></div>
+      <div class="funnel-row"><div class="funnel-stage in">Interest</div><div class="funnel-q" onclick="show('interest')">Nike vs Brooks vs ASICS for flat feet</div><div class="funnel-ad-type">→ Text ads</div></div>
+      <div class="funnel-row"><div class="funnel-stage de">Desire</div><div class="funnel-q" onclick="show('desire')">Best running shoes for flat feet under $150</div><div class="funnel-ad-type">→ Display ads</div></div>
+      <div class="funnel-row"><div class="funnel-stage ac">Action</div><div class="funnel-q" onclick="show('action')">Buy Nike Pegasus 41 best price free shipping</div><div class="funnel-ad-type">→ Display ads</div></div>
+      <div class="funnel-row"><div class="funnel-stage de">Desire</div><div class="funnel-q" onclick="show('travel')">Plan a weekend trip to Austin</div><div class="funnel-ad-type">→ Display + text</div></div>
+      <div class="funnel-row"><div class="funnel-stage aw">Awareness</div><div class="funnel-q" onclick="show('invest')">How to start investing in my 20s</div><div class="funnel-ad-type">→ Text ads</div></div>
+      <div class="funnel-row"><div class="funnel-stage de">Desire</div><div class="funnel-q" onclick="show('laptop')">Best laptop for programming under $1200</div><div class="funnel-ad-type">→ Display + text</div></div>
+    </div>
+  </div>
+
+  <div class="chat" id="chat"></div>
+  <div class="mx" id="mx">
+    <div class="mc">Queries <span class="mv" id="mQ">0</span></div>
+    <div class="mc">Text ads <span class="mv" id="mT">0</span></div>
+    <div class="mc">Display ads <span class="mv" id="mD">0</span></div>
+    <div class="mc">Relevance <span class="mv" id="mR">—</span></div>
+    <div class="mc">eCPM <span class="mv" id="mC">—</span></div>
+  </div>
+
+  <div class="ib"><div class="ip">
+    <textarea id="inp" placeholder="Ask anything..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send();}"></textarea>
+    <button class="sb" id="sB" onclick="send()">↑</button>
+  </div></div>
+  <div class="ft">ConvoAds — Built by Akshat Sharma · Contextual ad monetization for conversational AI</div>
+</div>
+
+<div class="mbg" id="mbg">
+  <div class="mdl">
+    <h2>PM Dashboard — AIDA Ad Strategy</h2>
+    <p>Internal view: how the engine classifies intent and selects ad formats</p>
+    <div class="aida">
+      <div class="aida-row"><div class="aida-label aw">Awareness</div><div class="aida-bar" style="background:#4285f4;width:100%"><span>Learning — "what is", "how does"</span></div><div class="aida-fmt">Text ads only</div></div>
+      <div class="aida-row"><div class="aida-label in">Interest</div><div class="aida-bar" style="background:#a855f7;width:82%"><span>Research — "vs", "compare"</span></div><div class="aida-fmt">Text ads only</div></div>
+      <div class="aida-row"><div class="aida-label de">Desire</div><div class="aida-bar" style="background:#f59e0b;width:60%"><span>Intent — budget, "best for"</span></div><div class="aida-fmt">Display + text</div></div>
+      <div class="aida-row"><div class="aida-label ac">Action</div><div class="aida-bar" style="background:#34d399;width:38%"><span>Convert — "buy", "book"</span></div><div class="aida-fmt">Display ads</div></div>
+    </div>
+    <div class="mg">
+      <div class="mcol"><h3>Text Ads (RSA)</h3><div class="mr"><span>Funnel stages</span><span>Awareness, Interest</span></div><div class="mr"><span>Avg CTR</span><span>3.2%</span></div><div class="mr"><span>eCPM range</span><span>$8–$25</span></div><div class="mr"><span>UX disruption</span><span>Minimal</span></div><div class="mr"><span>Goal</span><span>Educate, build trust</span></div></div>
+      <div class="mcol"><h3 class="g">Display Ads</h3><div class="mr"><span>Funnel stages</span><span>Desire, Action</span></div><div class="mr"><span>Avg CTR</span><span>0.8%</span></div><div class="mr"><span>eCPM range</span><span>$15–$60</span></div><div class="mr"><span>UX disruption</span><span>Moderate</span></div><div class="mr"><span>Goal</span><span>Convert intent</span></div></div>
+    </div>
+    <div class="insight"><strong>Product principle:</strong> Display ads only appear when the user has expressed purchase intent (Desire/Action). Showing product cards with prices to a user in the Awareness stage wastes advertiser spend and erodes trust. The engine classifies intent using signal words, budget mentions, and query specificity.</div>
+    <button class="mclose" onclick="cM()">Close</button>
+  </div>
+</div>
+
+<script>
+let showAds=true,pmView=false,qC=0,tC=0,dC=0;
+
+const DATA={
+awareness:{query:"What should I look for in running shoes?",stage:"awareness",reasoning:"User is learning basics — no brand preference or budget mentioned",response:"<p>When choosing running shoes, focus on a few key factors. <strong>Foot type</strong> matters most — whether you have flat feet, high arches, or neutral arches determines the level of support you need. Flat feet typically need stability shoes, while high arches benefit from cushioned, neutral shoes.</p><p><strong>Running surface</strong> is the next consideration. Road running shoes have smoother soles for pavement, while trail shoes have aggressive tread for uneven terrain. Also consider <strong>drop height</strong> — the difference in cushioning between heel and toe. Higher drop (10-12mm) suits heel strikers, while lower drop (0-6mm) works for midfoot or forefoot runners.</p><p>Finally, always prioritize fit over brand. Your running shoe should have about a thumb's width of space ahead of your longest toe, and your heel shouldn't slip when you walk.</p>",textAds:[{headline:"The Complete Guide to Finding Your Perfect Running Shoe",url:"www.runnersworld.com/shoe-guide",desc:"Foot type quiz, gait analysis explained, and expert recommendations for every budget and running style."},{headline:"Free Gait Analysis at Fleet Feet — 1,200+ Locations",url:"www.fleetfeet.com/gait-analysis",desc:"Book a free 15-minute session. Our fit experts use pressure mapping to match your stride to the right shoe."},{headline:"How to Choose Running Shoes — Nike Running Hub",url:"www.nike.com/running/guide",desc:"Interactive tool to find your ideal shoe based on foot type, distance, and surface. Free shipping on all running shoes."}],displayAds:[]},
+interest:{query:"Nike vs Brooks vs ASICS for flat feet",stage:"interest",reasoning:"User is comparing specific brands — researching, not ready to purchase",response:"<p>All three brands handle flat feet differently, and the right pick depends on what you prioritize.</p><p><strong>Brooks</strong> is widely regarded as the best overall for flat feet. Their GuideRails support system controls excess movement without feeling stiff. The Adrenaline GTS is their flagship stability shoe and consistently gets recommended by podiatrists. The downside — Brooks shoes tend to run heavier than the competition.</p><p><strong>ASICS</strong> takes a more structured approach with their DUOMAX support system. The Gel-Kayano is their stability workhorse and has been refined over 30+ versions. It's a great option if you need firm, reliable support, but some runners find it too rigid for shorter runs.</p><p><strong>Nike</strong> has improved their stability lineup recently, but they're still better known for neutral shoes. The React Infinity Run was designed to reduce injury rates and works for mild overpronation. If your flat feet are severe, Nike probably isn't the best starting point — but for mild to moderate cases, their lighter weight can be an advantage.</p>",textAds:[{headline:"Brooks vs ASICS vs Nike: 2026 Stability Shoe Comparison",url:"www.runningshoesguru.com/compare",desc:"Side-by-side breakdown of cushioning, weight, durability, and support across 12 stability models from all three brands."},{headline:"What Podiatrists Actually Recommend for Flat Feet",url:"www.healthline.com/foot-health",desc:"Board-certified podiatrists review the top stability shoes — which brands deliver real support vs marketing claims."}],displayAds:[]},
+desire:{query:"Best running shoes for flat feet under $150",stage:"desire",reasoning:"User has specific need (flat feet) and budget ceiling ($150) — purchase intent is high",response:"<p>At the under-$150 price point, you've got several strong options for flat feet. The sweet spot for stability shoes is actually in this range — you don't need to spend $180+ to get proper support.</p><p>The <strong>Brooks Adrenaline GTS 24</strong> (~$140) is the default recommendation for a reason. It delivers consistent stability through the GuideRails system without feeling like a brick. For something lighter, the <strong>ASICS GT-2000 12</strong> (~$130) is a solid alternative that shaves about an ounce off while still providing FlyteFoam cushioning and structured support.</p><p>If you want more cushion with your stability, the <strong>New Balance Fresh Foam 860v14</strong> (~$140) gives you a plush ride with medial post support. And for budget-conscious runners, the <strong>Saucony Guide 17</strong> at around $120 punches well above its price point.</p>",textAds:[{headline:"Free Gait Analysis — Find Your Perfect Stability Shoe",url:"www.fleetfeet.com/gait-analysis",desc:"Not sure which stability level you need? Book a free fitting session at 1,200+ locations nationwide."}],displayAds:[{name:"Brooks",tagline:"Adrenaline GTS 24",desc:"#1 recommended stability shoe for flat feet — GuideRails support, DNA LOFT cushioning",price:"$139.95",rating:"4.6",cta:"Shop Now",icon:"👟",grad:"linear-gradient(135deg,#667eea,#764ba2)"},{name:"ASICS",tagline:"GT-2000 12",desc:"Lightweight stability with FlyteFoam and GEL cushioning — 10.1oz",price:"$129.95",rating:"4.5",cta:"Shop Now",icon:"👟",grad:"linear-gradient(135deg,#4facfe,#00f2fe)"},{name:"Saucony",tagline:"Guide 17",desc:"Best value stability shoe — medial TPU post support at an accessible price",price:"$119.99",rating:"4.4",cta:"Shop Now",icon:"👟",grad:"linear-gradient(135deg,#43e97b,#38f9d7)"}]},
+action:{query:"Buy Nike Pegasus 41 best price free shipping",stage:"action",reasoning:"User named a specific product and wants to purchase — 'buy', 'best price', 'free shipping' are direct action signals",response:"<p>The <strong>Nike Pegasus 41</strong> is currently available across several retailers, and prices vary depending on colorway and size. The standard retail price is $139.99, but you can find deals if you know where to look.</p><p><strong>Nike.com</strong> offers free shipping on all orders for Nike Members (free to join). They also frequently run 20% off promotions for members. <strong>Running Warehouse</strong> often has previous-season colorways discounted to $109-119 with free 2-day shipping. <strong>Dick's Sporting Goods</strong> matches prices and offers free shipping on orders over $49.</p><p>If you're flexible on color, last season's Pegasus 41 colorways are the best deal — same shoe, same tech, just a different look, and usually $20-30 cheaper.</p>",textAds:[],displayAds:[{name:"Nike",tagline:"Pegasus 41 — Official Store",desc:"Free shipping for Nike Members. Sign up free. 60-day wear test, full refund if not satisfied.",price:"$139.99",rating:"4.7",cta:"Buy Now",icon:"👟",grad:"linear-gradient(135deg,#f093fb,#f5576c)"},{name:"Running Warehouse",tagline:"Pegasus 41 — Previous Season Colors",desc:"Same shoe, same performance. Free 2-day shipping, 90-day returns.",price:"$109.95",rating:"4.7",cta:"Buy Now",icon:"📦",grad:"linear-gradient(135deg,#fa709a,#fee140)"},{name:"Dick's Sporting Goods",tagline:"Pegasus 41 — Price Match Guarantee",desc:"Free shipping over $49. Same-day pickup available at 800+ stores.",price:"$139.99",rating:"4.6",cta:"Buy Now",icon:"🏪",grad:"linear-gradient(135deg,#0acffe,#495aff)"}]},
+travel:{query:"Plan a weekend trip to Austin",stage:"desire",reasoning:"User wants specific travel planning — implies intent to book",response:"<p>Austin's a great weekend pick — enough to do without needing a full week.</p><p><strong>Day 1:</strong> Start with breakfast tacos at Veracruz All Natural (the migas taco is mandatory). Walk the South Congress strip for shops and murals, then grab lunch at Franklin Barbecue if you're willing to queue, or skip the line and hit la Barbecue instead. Afternoon: Barton Springs Pool if it's warm, or the Blanton Museum if it's not. Evening: live music on 6th Street — check Antone's or Mohawk for the schedule.</p><p><strong>Day 2:</strong> Morning hike at the Greenbelt or Mount Bonnell for the view. Brunch at Paperboy or Jo's Coffee. Afternoon: explore the East Austin food truck parks. If you're into beer, hit up Zilker Brewing or Jester King (20 min outside town but worth the drive).</p>",textAds:[{headline:"Austin Travel Guide 2026 — Hidden Gems & Local Tips",url:"www.visitaustin.org/guide",desc:"Free downloadable guide from Austin's official tourism board. Neighborhood breakdowns, event calendar, and local recommendations."}],displayAds:[{name:"Hotel San José",tagline:"South Congress Boutique Hotel",desc:"Walk to everything on SoCo. Courtyard pool, minimalist rooms, live music on weekends.",price:"$189/night",rating:"4.5",cta:"Book Now",icon:"🏨",grad:"linear-gradient(135deg,#a18cd1,#fbc2eb)"},{name:"Southwest Airlines",tagline:"Flights to Austin — Fall Deals",desc:"Direct flights from 45+ cities. No change fees, 2 free checked bags.",price:"From $89",rating:"4.3",cta:"Book Flight",icon:"✈️",grad:"linear-gradient(135deg,#fccb90,#d57eeb)"}]},
+invest:{query:"How to start investing in my 20s",stage:"awareness",reasoning:"User is learning basics — no specific investment type or amount mentioned",response:"<p>Starting early is the single biggest advantage you have. Even small amounts grow significantly over 30-40 years thanks to compound interest. A $200/month investment starting at 25 could grow to over $500,000 by 65 at average market returns.</p><p>The simplest starting point: open a <strong>Roth IRA</strong> and invest in a <strong>low-cost index fund</strong> that tracks the S&P 500 (like Vanguard's VOO or Fidelity's FXAIX). The expense ratios are under 0.04%, meaning almost all your money actually works for you. Max contribution is $7,000/year in 2026.</p><p>If your employer offers a <strong>401(k) with a match</strong>, contribute enough to get the full match first — that's free money. Then fund your Roth IRA. After that, go back to the 401(k) or open a taxable brokerage account. Don't try to pick individual stocks when you're starting out. Boring index funds outperform most stock pickers over the long run.</p>",textAds:[{headline:"Investing for Beginners — Vanguard Learning Center",url:"www.vanguard.com/investing-basics",desc:"Free courses on asset allocation, index funds, retirement planning. No account required."},{headline:"Open a Roth IRA in 10 Minutes — Fidelity",url:"www.fidelity.com/roth-ira",desc:"No minimums, no account fees, $0 commissions on US stocks and ETFs. Start with any amount."},{headline:"How Much Should You Invest? Free Calculator",url:"www.nerdwallet.com/invest-calculator",desc:"Enter your age, income, and goals. See how much to invest monthly to hit your retirement target."}],displayAds:[]},
+laptop:{query:"Best laptop for programming under $1200",stage:"desire",reasoning:"User has specific use case (programming) and budget ($1200) — comparing products to buy",response:"<p>For programming under $1200, you want a good screen, at least 16GB of RAM, and a fast SSD. CPU matters more than GPU unless you're doing ML work.</p><p>The <strong>MacBook Air M3</strong> (~$1,099 for 16GB/256GB) is hard to beat for most programming. The M3 chip handles compilation fast, battery lasts all day, and the 15-inch model gives you real screen estate for side-by-side code and terminal. If you work in the Apple ecosystem or do iOS/macOS development, this is the default choice.</p><p>For Windows/Linux, the <strong>Lenovo ThinkPad E16 Gen 2</strong> with a Ryzen 7 is a workhorse at around $900-1,000. Excellent keyboard, great Linux support, and you can upgrade RAM later. The <strong>ASUS Zenbook 14 OLED</strong> (~$1,100) is the pick if screen quality matters to you — the OLED panel makes long coding sessions easier on your eyes.</p>",textAds:[{headline:"Developer Laptop Buying Guide — 2026 Edition",url:"www.tomshardware.com/laptops/dev-guide",desc:"Benchmarks for compiling, Docker performance, and battery life across 20 laptops tested with real dev workloads."}],displayAds:[{name:"Apple",tagline:"MacBook Air 15\" M3 — 16GB",desc:"All-day battery, fanless design, Liquid Retina display. Free engraving, trade-in available.",price:"$1,099",rating:"4.8",cta:"Shop Now",icon:"💻",grad:"linear-gradient(135deg,#667eea,#764ba2)"},{name:"Lenovo",tagline:"ThinkPad E16 Gen 2 — Ryzen 7",desc:"Best keyboard in class, upgradeable RAM, enterprise-grade Linux support.",price:"$949",rating:"4.5",cta:"Shop Now",icon:"💻",grad:"linear-gradient(135deg,#4facfe,#00f2fe)"},{name:"ASUS",tagline:"Zenbook 14 OLED — Intel Core Ultra",desc:"Stunning OLED display, 1.2kg ultralight, Thunderbolt 4, 75Wh battery.",price:"$1,099",rating:"4.6",cta:"Shop Now",icon:"💻",grad:"linear-gradient(135deg,#43e97b,#38f9d7)"}]}
+};
+
+function tAds(){showAds=!showAds;document.getElementById('atb').textContent=showAds?'Ads On':'Ads Off';document.getElementById('atb').classList.toggle('on',showAds);document.querySelectorAll('.sp').forEach(e=>e.style.display=showAds?'block':'none');}
+function tPM(){pmView=!pmView;document.getElementById('app').classList.toggle('pm-on',pmView);document.getElementById('pmb').classList.toggle('on',pmView);document.getElementById('pmb').textContent=pmView?'PM View ✓':'PM View';}
+function oM(){document.getElementById('mbg').classList.add('open');}
+function cM(){document.getElementById('mbg').classList.remove('open');}
+document.getElementById('mbg').addEventListener('click',e=>{if(e.target===e.currentTarget)cM();});
+
+const inp=document.getElementById('inp');
+inp.addEventListener('input',()=>{inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,120)+'px';});
+
+function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+function matchQuery(input){
+  const t=input.toLowerCase().trim();
+  const map=[
+    {keys:['what should i look','look for in running','what to look'],id:'awareness'},
+    {keys:['nike vs','brooks vs','asics vs','compare running','vs asics','vs brooks'],id:'interest'},
+    {keys:['best running shoe','flat feet under','running shoes under','stability shoe'],id:'desire'},
+    {keys:['buy nike','pegasus 41','best price','buy running','free shipping','order nike'],id:'action'},
+    {keys:['trip to austin','weekend austin','visit austin','plan austin','travel austin'],id:'travel'},
+    {keys:['start investing','investing in my 20','how to invest','begin investing'],id:'invest'},
+    {keys:['best laptop','laptop for programming','laptop under 1200','coding laptop'],id:'laptop'},
+  ];
+  for(const m of map){for(const k of m.keys){if(t.includes(k))return m.id;}}
+  return null;
+}
+
+function send(){
+  const t=inp.value.trim();
+  if(!t)return;
+  const matched=matchQuery(t);
+  if(matched){inp.value='';inp.style.height='auto';show(matched);return;}
+
+  document.getElementById('land').style.display='none';
+  const c=document.getElementById('chat');
+  c.style.display='block';
+  c.innerHTML+='<div class="msg msg-u"><div class="msg-uc">'+esc(t)+'</div></div>';
+  inp.value='';inp.style.height='auto';
+
+  let chips='';
+  const suggestions=['What should I look for in running shoes?','Best running shoes for flat feet under $150','Buy Nike Pegasus 41 best price','Plan a weekend trip to Austin','How to start investing in my 20s','Best laptop for programming under $1200'];
+  const keys=['awareness','desire','action','travel','invest','laptop'];
+  suggestions.forEach((s,i)=>{chips+='<div class="guardrail-chip" onclick="show(\''+keys[i]+'\')">'+s+'</div>';});
+
+  c.innerHTML+='<div class="guardrail"><div class="guardrail-inner"><div class="av"></div><div class="guardrail-body"><div class="guardrail-title"><span class="lock">🔒</span>Prototype Mode</div><div class="guardrail-text">This is a sandboxed prototype with pre-built demo scenarios. Free-text queries are disabled to maintain a controlled testing environment. Try one of the curated queries below to see how the ad engine adapts.</div><div class="guardrail-chips">'+chips+'</div></div></div></div>';
+  c.scrollTop=c.scrollHeight;
+}
+
+function show(key){
+  const d=DATA[key];if(!d)return;
+  document.getElementById('land').style.display='none';
+  const c=document.getElementById('chat');
+  c.style.display='block';c.innerHTML='';
+  qC++;document.getElementById('mQ').textContent=qC;
+  const sc={awareness:'aw',interest:'in',desire:'de',action:'ac'}[d.stage]||'aw';
+
+  let h='<div class="msg msg-u"><div class="msg-uc">'+d.query+'</div></div>';
+  h+='<div class="msg msg-a"><div class="av"></div><div class="ab"><div class="at">'+d.response+'</div><div class="aa"><button title="Like">👍</button><button title="Dislike">👎</button><button title="Share">↗</button></div>';
+
+  if(d.textAds.length||d.displayAds.length){
+    tC+=d.textAds.length;dC+=d.displayAds.length;
+    document.getElementById('mT').textContent=tC;document.getElementById('mD').textContent=dC;
+    document.getElementById('mR').textContent=Math.round(78+Math.random()*14)+'%';
+    document.getElementById('mC').textContent='$'+Math.round(18+Math.random()*22);
+
+    h+='<div class="sp" style="display:'+(showAds?'block':'none')+'">';
+    h+='<div class="pm-debug"><span class="label">Engine:</span><span class="pm-stage '+sc+'">'+d.stage.toUpperCase()+'</span><span>'+d.reasoning+'</span></div>';
+    h+='<div class="sp-l"><span class="sp-b">Sponsored</span>Based on your query</div>';
+
+    if(d.displayAds.length){
+      h+='<div class="da-grid">';
+      d.displayAds.forEach(a=>{
+        h+='<div class="da"><div class="da-img" style="background:'+a.grad+'"><span class="da-icon">'+a.icon+'</span><span class="da-brand">'+a.name+'</span><span class="da-badge">Ad</span></div><div class="da-body"><div class="da-name">'+a.tagline+'</div><div class="da-desc">'+a.desc+'</div><div class="da-foot">'+(a.price?'<span class="da-price">'+a.price+'</span>':'')+(a.rating?'<span class="da-rating">★ '+a.rating+'</span>':'')+'<span class="da-cta">'+a.cta+' →</span></div></div></div>';
+      });
+      h+='</div>';
+    }
+    if(d.textAds.length){
+      d.textAds.forEach(a=>{
+        h+='<div class="ta"><div class="ta-top"><span class="ta-badge">Ad</span><span class="ta-url">'+a.url+'</span></div><div class="ta-title">'+a.headline+'</div><div class="ta-desc">'+a.desc+'</div></div>';
+      });
+    }
+    h+='</div>';
+  }
+  h+='</div></div>';
+  c.innerHTML=h;c.scrollTop=0;
+}
+</script>
+</body>
+</html>
