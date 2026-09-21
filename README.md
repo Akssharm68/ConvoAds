@@ -4,7 +4,7 @@
 
 This prototype explores one possible answer: what if conversational AI could serve ads that users actually find helpful?
 
-[→ Try the Prototype](https://YOUR-GITHUB-USERNAME.github.io/convads)
+[→ Try the Prototype](https://akssharm68.github.io/ConvoAds/)
 
 ---
 
@@ -110,4 +110,4 @@ Response + matched ads rendered
 
 ---
 
-Built by [Akshat Sharma](https://linkedin.com/in/YOUR-LINKEDIN) · MS Information Systems, Stevens Institute of Technology · Product Management @ JPMorgan Chase
+Built by [Akshat Sharma](https://www.linkedin.com/in/aakshatsharma/) · MS Information Systems, Stevens Institute of Technology · Product Management @ JPMorgan Chase
