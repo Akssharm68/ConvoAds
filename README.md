@@ -1,6 +1,6 @@
-# ConvoAds — Contextual Ad Monetization for Conversational AI
+# ConvoAds: Contextual Ad Monetization for Conversational AI
 
-**The problem is simple:** Google Search makes $175B+ a year from ads. Gemini makes $0. Every query that moves from Search to Gemini is revenue Google loses — and that migration is accelerating.
+**The problem is simple:** Google Search makes $175B+ a year from ads. Gemini makes $0. Every query that moves from Search to Gemini is revenue Google loses and that migration is accelerating.
 
 This prototype explores one possible answer: what if conversational AI could serve ads that users actually find helpful?
 
@@ -10,9 +10,9 @@ This prototype explores one possible answer: what if conversational AI could ser
 
 ## Why I Built This
 
-I kept noticing something while using Gemini for shopping and travel queries. When I ask "best laptop under $1200," Gemini gives me a solid answer — but there's no way for a brand to say "hey, check out our new model that fits exactly what you're looking for." On Google Search, that's a sponsored result. On Gemini, that monetization layer doesn't exist yet.
+I kept noticing something while using Gemini for shopping and travel queries. When I ask "best laptop under $1200," Gemini gives me a solid answer but there's no way for a brand to say "hey, check out our new model that fits exactly what you're looking for." On Google Search, that's a sponsored result. On Gemini, that monetization layer doesn't exist yet.
 
-That's a massive gap. Not just for Google's revenue, but also for users — sometimes the sponsored result IS the most relevant one. The question isn't whether ads belong in AI chat. It's how to do it without making the experience worse.
+That's a massive gap. Not just for Google's revenue, but also for users sometimes the sponsored result IS the most relevant one. The question isn't whether ads belong in AI chat. It's how to do it without making the experience worse.
 
 ## The Core Idea: Match Ad Format to User Intent
 
@@ -27,13 +27,13 @@ ConvoAds classifies every query across the AIDA purchase funnel and serves the a
 | **Desire** | Has specific needs + budget | Display ads + text | User wants to see options. Product cards with prices and ratings add value here. |
 | **Action** | Ready to buy/book/sign up | Display ads | User wants to transact. Strong CTAs, pricing, availability. |
 
-The engine picks up on intent signals — budget mentions ("under $150"), comparison language ("vs", "which is better"), action words ("buy", "order", "book") — and routes to the right format.
+The engine picks up on intent signals budget mentions ("under $150"), comparison language ("vs", "which is better"), action words ("buy", "order", "book") and routes to the right format.
 
 **The product principle:** showing a $129 product card to someone who just asked "what is a running shoe?" is wasted ad spend and damaged trust. Showing it to someone who asked "best stability shoe under $150 for overpronation" is genuinely useful.
 
 ## About This Prototype
 
-This is a sandboxed prototype with 7 pre-built demo scenarios spanning all 4 AIDA stages. Free-text input is accepted but routes through a controlled query matcher — unrecognized queries surface a guardrail message with suggested demo queries. This keeps the demo self-contained with zero external dependencies.
+This is a sandboxed prototype with 7 pre-built demo scenarios spanning all 4 AIDA stages. Free-text input is accepted but routes through a controlled query matcher unrecognized queries surface a guardrail message with suggested demo queries. This keeps the demo self-contained with zero external dependencies.
 
 **Try the same topic at different funnel stages to see the ad format shift:**
 1. "What should I look for in running shoes?" → Awareness → text ads only
@@ -41,7 +41,7 @@ This is a sandboxed prototype with 7 pre-built demo scenarios spanning all 4 AID
 3. "Best running shoes for flat feet under $150" → Desire → display ads appear
 4. "Buy Nike Pegasus 41 best price free shipping" → Action → display ads with Buy Now CTAs
 
-Toggle **PM View** in the top bar to see the internal engine data — AIDA classification, reasoning, and performance metrics. Users don't see any of this by default; it's the internal PM perspective on how the engine decides what to serve.
+Toggle **PM View** in the top bar to see the internal engine data, AIDA classification, reasoning, and performance metrics. Users don't see any of this by default; it's the internal PM perspective on how the engine decides what to serve.
 
 ## Ad Formats
 
@@ -63,7 +63,7 @@ I want to be upfront about what this prototype doesn't include:
 
 **No production-grade intent classifier.** The current sandbox uses keyword matching. A production version would need a lightweight ML model trained on labeled query data, running at sub-100ms latency.
 
-These aren't excuses — they're the roadmap. Each one is documented with the approach I'd take.
+These aren't excuses they're the roadmap. Each one is documented with the approach I'd take.
 
 ## Metrics That Matter
 
@@ -92,7 +92,7 @@ convads/
 
 ## How It Works (Technical)
 
-Single HTML file. Zero external dependencies. All 7 demo scenarios are pre-built with hardcoded responses and ads. The query matcher uses keyword matching to route typed input to the closest demo scenario — unrecognized input triggers a guardrail message pointing back to the curated queries.
+Single HTML file. Zero external dependencies. All 7 demo scenarios are pre-built with hardcoded responses and ads. The query matcher uses keyword matching to route typed input to the closest demo scenario unrecognized input triggers a guardrail message pointing back to the curated queries.
 
 In a production version, the intent classifier would be a dedicated ML model. The ads would come from real ad inventory with real-time bidding. This prototype demonstrates the UX and product logic, not the production architecture.
 
