@@ -7,7 +7,7 @@
 
 ## The Problem
 
-Google's ad business depends on Search. In 2025, Google Search generated over $175 billion in advertising revenue — roughly 57% of Alphabet's total revenue. That model works because Search queries have clear commercial intent, and the ad auction system matches that intent to advertisers willing to pay for it.
+Google's ad business depends on Search. In 2025, Google Search generated over $175 billion in advertising revenue: roughly 57% of Alphabet's total revenue. That model works because Search queries have clear commercial intent, and the ad auction system matches that intent to advertisers willing to pay for it.
 
 Gemini doesn't have this. Every conversational AI query that replaces a traditional search query is a query Google can't monetize. At current adoption rates, this cannibalization could represent tens of billions in at-risk revenue over the next 3-5 years.
 
@@ -17,7 +17,7 @@ The competitive picture makes this more urgent. ChatGPT and Claude have no ads. 
 
 Contextually relevant sponsored content, served in the right format based on user intent, can generate meaningful ad revenue within conversational AI without measurably degrading user satisfaction or trust.
 
-The key variable is format-intent matching. A blanket approach (same ad format for every query) will fail — either too aggressive for informational queries or too weak for high-intent ones. The ad engine needs to understand where the user is in their decision journey and adapt accordingly.
+The key variable is format-intent matching. A blanket approach (same ad format for every query) will fail either too aggressive for informational queries or too weak for high-intent ones. The ad engine needs to understand where the user is in their decision journey and adapt accordingly.
 
 ## Goals
 
@@ -28,20 +28,20 @@ The key variable is format-intent matching. A blanket approach (same ad format f
 
 ## Non-Goals
 
-- Maximizing ad revenue from day one — trust matters more than CPMs at this stage
+- Maximizing ad revenue from day one trust matters more than CPMs at this stage
 - Building a production ad serving infrastructure
 - Replacing or modifying the AI response content to favor advertisers
 - Personalized targeting using user data (this prototype is query-context only, no user profiling)
 
 ## User Stories
 
-**As a user asking an informational question,** I want to get a complete, helpful answer without being distracted by product ads — so I can learn without feeling sold to.
+**As a user asking an informational question,** I want to get a complete, helpful answer without being distracted by product ads, so I can learn without feeling sold to.
 
-**As a user researching a purchase,** I want to see relevant product options alongside my answer — so I can compare and decide without leaving the chat.
+**As a user researching a purchase,** I want to see relevant product options alongside my answer, so I can compare and decide without leaving the chat.
 
-**As a user ready to buy,** I want to see specific products with prices, ratings, and direct links — so I can complete my purchase quickly.
+**As a user ready to buy,** I want to see specific products with prices, ratings, and direct links, so I can complete my purchase quickly.
 
-**As an advertiser,** I want my ads shown to users who are actually in the market for what I'm selling — so I don't waste spend on users who aren't ready to buy.
+**As an advertiser,** I want my ads shown to users who are actually in the market for what I'm selling so I don't waste spend on users who aren't ready to buy.
 
 ## The AIDA Framework
 
@@ -50,20 +50,20 @@ The engine classifies each query into one of four intent stages and selects the 
 ### Awareness
 **User behavior:** Exploring, learning basics. No purchase intent.
 **Signal words:** "what is", "how does", "explain", "tell me about", "what are"
-**Ad format:** Text ads only — educational content, brand awareness, guide links
+**Ad format:** Text ads only educational content, brand awareness, guide links
 **Rationale:** User hasn't formed a preference yet. Visual product ads would be irrelevant noise.
 
 ### Interest
 **User behavior:** Actively researching, comparing options. Forming preferences but not ready to buy.
 **Signal words:** "vs", "compare", "pros and cons", "which is better", "review", "difference between"
-**Ad format:** Text ads only — comparison guides, expert reviews, sponsored content
+**Ad format:** Text ads only comparison guides, expert reviews, sponsored content
 **Rationale:** User is evaluating. They want information, not checkout buttons.
 
 ### Desire
 **User behavior:** Narrowed down needs, has budget parameters, looking at specific options.
 **Signal words:** Price ranges ("under $150"), specific features ("for flat feet"), "best", "top", "recommended for"
 **Ad format:** Display ads (product cards with pricing and ratings) + supporting text ads
-**Rationale:** User WANTS to see options. Product cards with prices and ratings add value here — they help the user make a decision.
+**Rationale:** User WANTS to see options. Product cards with prices and ratings add value here, they help the user make a decision.
 
 ### Action
 **User behavior:** Ready to transact. Looking for where/how to buy.
@@ -105,7 +105,7 @@ These are non-negotiable. If any of these are violated, the feature should be ro
 
 4. **The AI response must be fully useful on its own.** If you remove every ad, the answer should still completely address the user's question. Ads are additive, never substitutive.
 
-5. **No user data profiling for ad targeting.** This version relies only on the content of the current query — not search history, location, or demographic data.
+5. **No user data profiling for ad targeting.** This version relies only on the content of the current query not search history, location, or demographic data.
 
 ## Success Metrics
 
@@ -129,18 +129,18 @@ These are non-negotiable. If any of these are violated, the feature should be ro
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | Users reject any ads in AI chat | Medium | High | Phased rollout starting at 5%, measure before expanding |
-| Ads erode trust in AI response accuracy | Medium | Critical | Strict separation — response generated before ads, never modified |
+| Ads erode trust in AI response accuracy | Medium | Critical | Strict separation response generated before ads, never modified |
 | Regulatory (FTC disclosure) | Low | High | Clear labeling, no deceptive patterns, legal review |
 | Advertisers game the system | Medium | Medium | Quality scoring, manual review at launch, automated filters at scale |
-| Intent misclassification (showing product ads on informational queries) | Medium | Medium | Conservative classification — default to text ads when uncertain |
+| Intent misclassification (showing product ads on informational queries) | Medium | Medium | Conservative classification default to text ads when uncertain |
 
 ## What's Not Built Yet
 
 This is a prototype. The following would be needed for production:
 
-- **Dedicated intent classifier** — lightweight ML model trained on labeled query data, not an LLM call per query
-- **Real ad inventory integration** — Google Ads API, real-time bidding
-- **User research validation** — the research plan exists (see `research-plan.md`) but hasn't been executed
-- **A/B testing infrastructure** — the experiment design exists (see `experiment-plan.md`) but hasn't been run
-- **Advertiser controls** — brand safety, category exclusions, bid management
-- **Feedback loops** — user signals (dismiss, click, ignore) feeding back into relevance scoring
+- **Dedicated intent classifier**: lightweight ML model trained on labeled query data, not an LLM call per query
+- **Real ad inventory integration**: Google Ads API, real-time bidding
+- **User research validation**: the research plan exists (see `research-plan.md`) but hasn't been executed
+- **A/B testing infrastructure**: he experiment design exists (see `experiment-plan.md`) but hasn't been run
+- **Advertiser controls**: brand safety, category exclusions, bid management
+- **Feedback loops**: user signals (dismiss, click, ignore) feeding back into relevance scoring
